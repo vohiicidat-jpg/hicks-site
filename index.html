@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HiCKS Sched">
+<meta name="theme-color" content="#1a1a1a">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>HiCKS LOCAL STAND｜Instagram投稿スケジューラー</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --black: #1a1a1a;
+  --red:   #c0392b;
+  --gold:  #d4a017;
+  --gray:  #f5f5f5;
+  --bdr:   #e5e5e5;
+  --r:     12px;
+  --sh:    0 1px 6px rgba(0,0,0,.08);
+}
+html { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic UI', sans-serif;
+  background: #f0ede8;
+  color: var(--black);
+  min-height: 100%;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ── ヘッダー ── */
+header {
+  background: var(--black);
+  color: #fff;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky; top: 0; z-index: 50;
+  box-shadow: 0 2px 12px rgba(0,0,0,.3);
+  min-height: 56px;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-logo { font-size: 1.4rem; line-height: 1; }
+.brand-name { font-size: .95rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+.brand-sub  { font-size: .6rem; color: var(--gold); letter-spacing: .18em; text-transform: uppercase; margin-top: 1px; }
+
+.header-chips {
+  display: flex; gap: 12px; align-items: center;
+  padding: 0 12px; border-left: 1px solid #333;
+}
+.chip-item { font-size: .7rem; color: #aaa; white-space: nowrap; }
+.chip-item strong { color: #fff; }
+
+.header-actions { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.hbtn {
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+  color: #fff; border-radius: 8px; padding: 6px 10px;
+  font-size: .75rem; font-weight: 700; cursor: pointer;
+  white-space: nowrap; transition: background .15s;
+  display: flex; align-items: center; gap: 4px;
+}
+.hbtn:hover { background: rgba(255,255,255,.2); }
+#installBtn { display: none; background: var(--gold); border-color: var(--gold); color: #000; }
+
+/* ── ラッパー ── */
+.wrap {
+  max-width: 1260px; margin: 0 auto;
+  padding: 16px; display: grid;
+  grid-template-columns: 300px 1fr; gap: 16px;
+  align-items: start;
+}
+
+/* ── カード ── */
+.card {
+  background: #fff; border-radius: var(--r);
+  padding: 16px; box-shadow: var(--sh); margin-bottom: 12px;
+}
+.card:last-child { margin-bottom: 0; }
+.card-title {
+  font-size: .65rem; font-weight: 900; color: #999;
+  text-transform: uppercase; letter-spacing: .1em;
+  margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+}
+.card-title::after { content: ''; flex: 1; height: 1px; background: var(--bdr); }
+
+/* コンテンツ種別 */
+.ct-list { display: flex; flex-direction: column; gap: 5px; }
+.ct-row {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px 10px; border-radius: 8px;
+  border-left: 3px solid transparent; transition: background .12s;
+}
+.ct-row:hover { background: #fafafa; }
+.ct-icon { font-size: 1rem; flex-shrink: 0; width: 22px; text-align: center; }
+.ct-body { flex: 1; min-width: 0; }
+.ct-name { font-size: .83rem; font-weight: 700; }
+.ct-desc { font-size: .7rem; color: #777; margin-top: 1px; line-height: 1.4; }
+.ct-meta { display: flex; gap: 4px; margin-top: 3px; flex-wrap: wrap; }
+.micro { font-size: .6rem; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
+
+/* Tips */
+.tips { display: flex; flex-direction: column; gap: 8px; }
+.tip { display: flex; gap: 8px; padding: 8px 10px; background: var(--gray); border-radius: 8px; }
+.tip-icon { font-size: .9rem; flex-shrink: 0; }
+.tip-body { font-size: .74rem; line-height: 1.5; color: #444; }
+.tip-body strong { color: var(--red); font-weight: 800; }
+
+/* サマリー */
+.sum-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
+.sum-item { background: var(--gray); border-radius: 8px; padding: 10px; text-align: center; }
+.sum-num { font-size: 1.6rem; font-weight: 900; line-height: 1; }
+.sum-lbl { font-size: .67rem; color: #888; margin-top: 3px; line-height: 1.3; }
+
+/* アコーディオン（モバイル用サイドバー） */
+.accordion-toggle {
+  display: none; width: 100%;
+  background: none; border: none; cursor: pointer;
+  font-size: .75rem; font-weight: 800; color: #666;
+  padding: 8px 0 6px; text-align: left;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.accordion-toggle .arrow { transition: transform .2s; }
+.accordion-toggle.open .arrow { transform: rotate(180deg); }
+.accordion-body { overflow: hidden; transition: max-height .3s ease; }
+
+/* ── メインエリア ── */
+.main-area { display: flex; flex-direction: column; gap: 12px; }
+
+/* 月ナビ */
+.month-bar {
+  background: #fff; border-radius: var(--r); padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px; box-shadow: var(--sh); flex-wrap: wrap;
+}
+.month-nav { display: flex; align-items: center; gap: 4px; }
+.month-title { font-size: 1.2rem; font-weight: 900; min-width: 120px; }
+.icon-btn {
+  background: none; border: none; cursor: pointer; color: #666;
+  padding: 5px 9px; border-radius: 7px; font-size: .95rem; transition: background .1s;
+}
+.icon-btn:hover { background: var(--gray); }
+.action-row { display: flex; gap: 7px; margin-left: auto; }
+.btn {
+  padding: 7px 14px; border: none; border-radius: 8px; cursor: pointer;
+  font-size: .82rem; font-weight: 800; transition: opacity .15s, transform .1s; white-space: nowrap;
+}
+.btn:active { transform: scale(.97); }
+.btn:hover { opacity: .88; }
+.btn-auto  { background: var(--black); color: #fff; }
+.btn-ghost { background: var(--gray); color: #555; }
+.btn-danger { background: #fee; color: var(--red); }
+
+/* 凡例 */
+.legend-bar {
+  background: #fff; border-radius: var(--r); padding: 10px 14px;
+  box-shadow: var(--sh); display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+}
+.legend-title { font-size: .62rem; font-weight: 900; color: #999; letter-spacing: .08em; text-transform: uppercase; }
+.legend-item { display: flex; align-items: center; gap: 4px; font-size: .7rem; color: #444; }
+.legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── カレンダー ── */
+.calendar { background: #fff; border-radius: var(--r); overflow: hidden; box-shadow: var(--sh); }
+.cal-head { display: grid; grid-template-columns: repeat(7,1fr); background: var(--black); }
+.cal-head span { text-align: center; padding: 8px 0; font-size: .7rem; font-weight: 800; color: #888; }
+.cal-head span:first-child { color: #e07070; }
+.cal-head span:last-child  { color: #7090d0; }
+
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); }
+.cal-cell {
+  min-height: 96px; border-right: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0;
+  padding: 5px 4px; cursor: pointer; transition: background .1s;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.cal-cell:nth-child(7n) { border-right: none; }
+.cal-cell:hover { background: #fdf8f0; }
+.cal-cell.other-month  { opacity: .25; pointer-events: none; background: #fafafa; }
+.cal-cell.closed       { background: #f8f7f5; }
+.cal-cell.closed:hover { background: #f5f0ea; }
+.cal-cell.today .day-num { background: var(--red); color: #fff; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }
+.cal-cell.sun .day-num { color: #c0392b; }
+.cal-cell.sat .day-num { color: #2980b9; }
+
+.day-row { display: flex; align-items: center; gap: 3px; }
+.day-num { font-size: .8rem; font-weight: 800; line-height: 20px; }
+.closed-lbl { font-size: .58rem; color: #ccc; font-weight: 700; letter-spacing: .04em; }
+
+.post-tag {
+  font-size: .66rem; font-weight: 700; padding: 2px 5px; border-radius: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; line-height: 1.3;
+}
+.post-time { font-size: .61rem; color: #aaa; padding-left: 1px; }
+.cell-add  { margin-top: auto; text-align: center; color: #ddd; font-size: .8rem; font-weight: 900; }
+.cal-cell:hover .cell-add { color: var(--red); }
+
+/* ── モーダル ── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.5); z-index: 200;
+  align-items: center; justify-content: center; padding: 16px;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: #fff; border-radius: 18px; width: 100%;
+  max-width: 460px; max-height: 92vh; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: 0 16px 60px rgba(0,0,0,.25); animation: pop .18s ease;
+}
+@keyframes pop { from { transform:scale(.93);opacity:0; } to { transform:scale(1);opacity:1; } }
+.modal-head { background: var(--black); color:#fff; padding:16px 18px 13px; border-radius:18px 18px 0 0; }
+.modal-head h3 { font-size:.98rem; font-weight:900; }
+.modal-head .sub { font-size:.75rem; color:#aaa; margin-top:2px; }
+.modal-body { padding:14px 18px; display:flex; flex-direction:column; gap:12px; }
+.modal-body label { font-size:.76rem; font-weight:800; color:#555; display:block; margin-bottom:3px; }
+.modal-body select,
+.modal-body input[type="text"],
+.modal-body textarea,
+.modal-body input[type="time"] {
+  width:100%; padding:8px 11px; border:1.5px solid var(--bdr); border-radius:8px;
+  font-size:.9rem; outline:none; font-family:inherit; background:#fff; transition:border-color .15s;
+}
+.modal-body select:focus,
+.modal-body input:focus,
+.modal-body textarea:focus { border-color:var(--black); }
+.modal-body textarea { resize:vertical; min-height:68px; }
+.modal-foot {
+  padding:12px 18px 16px; display:flex; gap:7px; justify-content:flex-end;
+  border-top:1px solid var(--bdr);
+}
+.modal-foot .del { margin-right:auto; }
+
+.tabs { display:flex; gap:4px; margin-bottom:10px; }
+.tab-btn { padding:5px 11px; border:none; border-radius:6px; font-size:.73rem; font-weight:800; cursor:pointer; background:var(--gray); color:#666; transition:background .1s,color .1s; }
+.tab-btn.active { background:var(--black); color:#fff; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+.suggest-list { display:flex; flex-direction:column; gap:4px; max-height:340px; overflow-y:auto; }
+.suggest-item { padding:8px 10px; background:var(--gray); border-radius:7px; cursor:pointer; font-size:.76rem; border:1.5px solid transparent; transition:background .1s; }
+.suggest-item:hover { background:#fff; border-color:var(--black); }
+.si-title  { font-weight:700; }
+.si-tags   { color:#888; margin-top:2px; font-size:.69rem; }
+.si-photo  {
+  margin-top:5px; font-size:.7rem; color:#2980b9;
+  background:#eaf4fb; border-radius:5px; padding:4px 7px;
+  line-height:1.5; display:flex; gap:5px; align-items:flex-start;
+}
+.si-photo::before { content:'📷'; flex-shrink:0; }
+/* 編集タブ内の撮影ヒント */
+.photo-hint {
+  background:#eaf4fb; border:1px solid #aed6f1;
+  border-radius:8px; padding:10px 12px;
+  font-size:.78rem; color:#1a5276; line-height:1.6;
+  display:flex; gap:8px; align-items:flex-start;
+}
+.photo-hint::before { content:'📷'; font-size:1rem; flex-shrink:0; }
+
+/* QRコードモーダル */
+.qr-modal { max-width: 360px; }
+.qr-body { padding:20px 18px; text-align:center; }
+.qr-body p { font-size:.82rem; color:#555; line-height:1.6; margin-bottom:16px; }
+#qrCanvas { margin: 0 auto 12px; display:block; }
+.qr-url {
+  font-size:.75rem; font-family:monospace; background:var(--gray);
+  border-radius:8px; padding:10px 12px; word-break:break-all;
+  color:#333; margin-bottom:10px; text-align:left;
+}
+.qr-note { font-size:.7rem; color:#aaa; line-height:1.5; text-align:left; }
+.qr-localhost-warn {
+  background:#fff8e1; border:1px solid #ffe082; border-radius:8px;
+  padding:10px 12px; font-size:.75rem; color:#7b5800; line-height:1.6; margin-bottom:12px;
+}
+
+/* ── 固定フッター（モバイル自動スケジュールボタン） ── */
+.mobile-fab {
+  display: none;
+  position: fixed; bottom: calc(16px + env(safe-area-inset-bottom));
+  right: 16px; z-index: 40;
+  background: var(--black); color: #fff;
+  border: none; border-radius: 28px; padding: 14px 20px;
+  font-size: .88rem; font-weight: 900; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+  display: none; align-items: center; gap: 6px;
+}
+.mobile-fab:active { transform: scale(.95); }
+
+/* ── 業務予定タグ ── */
+.biz-tag {
+  font-size:.63rem; font-weight:700; padding:1px 5px; border-radius:4px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  display:block; line-height:1.3; margin-top:1px;
+}
+/* 業務予定リスト（モーダル内） */
+.biz-list { display:flex; flex-direction:column; gap:5px; min-height:32px; margin-bottom:10px; }
+.biz-item {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 10px; background:#f8f8f8; border-radius:8px;
+}
+.biz-item-icon { font-size:.95rem; flex-shrink:0; }
+.biz-item-body { flex:1; min-width:0; }
+.biz-item-title { font-size:.83rem; font-weight:700; }
+.biz-item-meta  { font-size:.7rem; color:#888; margin-top:1px; }
+.biz-del { background:none; border:none; cursor:pointer; color:#ccc; padding:2px 6px; font-size:.95rem; border-radius:4px; flex-shrink:0; }
+.biz-del:hover { color:#e53; background:#fee; }
+.biz-add {
+  background:#f5f5f5; border-radius:9px; padding:10px 12px;
+  display:flex; flex-direction:column; gap:8px;
+}
+.biz-add-row { display:flex; gap:6px; }
+.biz-add select, .biz-add input {
+  padding:7px 10px; border:1.5px solid var(--bdr); border-radius:8px;
+  font-size:.85rem; outline:none; font-family:inherit; background:#fff;
+}
+.biz-add select:focus, .biz-add input:focus { border-color:var(--black); }
+.biz-add select { flex:1.2; }
+.biz-add input[type=text] { flex:2; }
+.biz-add input[type=time] { flex:1; }
+.btn-biz-add {
+  background: var(--black); color: #fff;
+  border: none; border-radius: 8px;
+  padding: 9px 16px; font-size: .85rem; font-weight: 800;
+  cursor: pointer; width: 100%; margin-top: 2px;
+  transition: background .15s;
+}
+.btn-biz-add:hover { background: #333; }
+
+/* ── トースト ── */
+.toast {
+  position:fixed; bottom:calc(72px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%);
+  background:var(--black); color:#fff; padding:9px 22px; border-radius:20px;
+  font-size:.83rem; font-weight:700; opacity:0; transition:opacity .25s;
+  pointer-events:none; z-index:999; white-space:nowrap;
+}
+.toast.show { opacity:1; }
+
+/* ════════════════════════════════
+   モバイル (〜 640px)
+════════════════════════════════ */
+@media (max-width: 640px) {
+  /* ヘッダー */
+  .header-chips { display: none; }
+  header { padding: 0 14px; min-height: 52px; }
+  .brand-name { font-size: .85rem; }
+  .hbtn span.label { display: none; }
+
+  /* レイアウト */
+  .wrap {
+    grid-template-columns: 1fr;
+    padding: 10px 10px calc(80px + env(safe-area-inset-bottom));
+    gap: 10px;
+  }
+  aside { order: 2; }
+  .main-area { order: 1; }
+
+  /* アコーディオンを有効化 */
+  .accordion-toggle { display: flex; }
+
+  /* カレンダー */
+  .cal-cell { min-height: 72px; padding: 4px 3px; }
+  .day-num  { font-size: .75rem; }
+  .post-tag { font-size: .6rem; padding: 1px 4px; }
+  .post-time { font-size: .57rem; }
+  .closed-lbl { font-size: .55rem; }
+
+  /* 月ナビ */
+  .month-bar { padding: 10px 12px; }
+  .month-title { font-size: 1.05rem; min-width: 100px; }
+  .action-row { gap: 5px; }
+  .btn { padding: 6px 10px; font-size: .78rem; }
+  /* デスクトップ版ボタンは隠してFABで代替 */
+  .btn-auto { display: none; }
+  .btn-ghost { display: none; }
+
+  /* モーダル：ボトムシート */
+  .overlay { align-items: flex-end; padding: 0; }
+  .modal { border-radius: 20px 20px 0 0; max-width: 100%; max-height: 94vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .modal-head { border-radius: 20px 20px 0 0; }
+
+  /* FAB表示 */
+  .mobile-fab { display: flex; }
+
+  /* 凡例を非表示（スペース節約） */
+  .legend-bar { display: none; }
+
+  /* トースト位置 */
+  .toast { bottom: calc(80px + env(safe-area-inset-bottom)); }
+}
+
+@media (min-width: 641px) {
+  .accordion-toggle { display: none; }
+  .accordion-body { max-height: none !important; overflow: visible !important; }
+}
+
+/* ── 予実・日報 拡張 ── */
+.yj-card label{font-size:.62rem;font-weight:800;color:#999;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:3px;}
+.yj-inrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.yj-card input{width:100%;padding:8px 9px;border:1px solid var(--bdr);border-radius:8px;font-size:.92rem;font-variant-numeric:tabular-nums;}
+.yj-card input:focus{outline:none;border-color:var(--black);}
+.yj-daily{background:var(--gray);border-radius:8px;padding:8px 10px;font-size:.72rem;color:#666;margin-top:8px;}
+.yj-daily strong{font-size:1.02rem;color:var(--black);font-variant-numeric:tabular-nums;}
+.yj-sum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+.yj-box{background:var(--gray);border-radius:8px;padding:9px 8px;text-align:center;}
+.yj-box .v{font-size:1.12rem;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1;}
+.yj-box .l{font-size:.6rem;color:#888;margin-top:3px;}
+.pos{color:#1f8a4c;}.neg{color:var(--red);}
+.yj-paste-toggle{margin-top:10px;font-size:.7rem;color:#999;cursor:pointer;}
+.yj-paste{display:none;margin-top:8px;}
+.yj-paste.open{display:block;}
+.yj-paste textarea{width:100%;min-height:70px;border:1px solid var(--bdr);border-radius:8px;padding:8px;font-family:ui-monospace,Menlo,monospace;font-size:.78rem;}
+.rep-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.rep-full{grid-column:1/-1;}
+.rep-yj{background:var(--gray);border-radius:8px;padding:10px 12px;font-size:.78rem;color:#666;display:flex;justify-content:space-between;align-items:center;margin-top:12px;}
+.rep-yj .big{font-size:1.02rem;font-weight:900;font-variant-numeric:tabular-nums;}
+.rep-actions{display:flex;gap:8px;margin-top:12px;}
+.sales-chip{margin-top:3px;font-size:.6rem;font-weight:800;color:#1f8a4c;background:#eafaf0;border:1px solid #b8e6c9;border-radius:4px;padding:1px 4px;display:inline-block;font-variant-numeric:tabular-nums;}
+.sales-chip.under{color:var(--red);background:#fdecea;border-color:#f5c6cb;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-logo">🌭</span>
+    <div>
+      <div class="brand-name">HiCKS LOCAL STAND</div>
+      <div class="brand-sub">Instagram Scheduler</div>
+    </div>
+  </div>
+  <div class="header-chips">
+    <div class="chip-item">営業 <strong>水〜土</strong></div>
+    <div class="chip-item">ランチ <strong>11:00〜17:00</strong></div>
+    <div class="chip-item">バー <strong>金・土 18〜22時</strong></div>
+    <div class="chip-item">定休 <strong>日・月・火</strong></div>
+  </div>
+  <div class="header-actions">
+    <span id="syncBadge" style="font-size:.7rem;color:#7fc;opacity:0;transition:opacity .5s;margin-right:4px;white-space:nowrap;"></span>
+    <button class="hbtn" onclick="showQr()">📱 <span class="label">スマホで開く</span></button>
+    <button class="hbtn" id="installBtn" onclick="installPwa()">⬇ <span class="label">インストール</span></button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- ===== サイドバー ===== -->
+  <aside>
+
+    <div class="card">
+      <button class="accordion-toggle" onclick="toggleAccordion(this)">
+        🗂 コンテンツ戦略 7種 <span class="arrow">▼</span>
+      </button>
+      <div class="accordion-body" style="max-height:0">
+        <div class="card-title" style="margin-top:4px">🗂 コンテンツ戦略 7種</div>
+        <div class="ct-list" id="ctList"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <button class="accordion-toggle" onclick="toggleAccordion(this)">
+        🧠 ワンオペ店の投稿法則 <span class="arrow">▼</span>
+      </button>
+      <div class="accordion-body" style="max-height:0">
+        <div class="tips" style="margin-top:8px" id="tipsList"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📈 今月の予実</div>
+      <div class="yj-card">
+        <div class="yj-inrow">
+          <div><label>月予算（円）</label><input type="number" id="yjMonth" inputmode="numeric" placeholder="300000" oninput="onBudgetInput()"></div>
+          <div><label>営業日数</label><input type="number" id="yjDays" inputmode="numeric" placeholder="17" oninput="onBudgetInput()"></div>
+        </div>
+        <div class="yj-daily">日割予算 <strong id="yjDaily">¥0</strong><span id="yjDailyEdit" style="cursor:pointer;text-decoration:underline;margin-left:8px;font-size:.66rem;color:#999" onclick="editDaily()">手で変更</span></div>
+        <div class="yj-sum">
+          <div class="yj-box"><div class="v" id="yjTotal">¥0</div><div class="l">累計売上</div></div>
+          <div class="yj-box"><div class="v" id="yjRate">—</div><div class="l">月予算 達成率</div></div>
+          <div class="yj-box"><div class="v" id="yjRemain">—</div><div class="l">予算まで残り</div></div>
+          <div class="yj-box"><div class="v" id="yjPace">—</div><div class="l">ペース</div></div>
+        </div>
+        <div class="yj-paste-toggle" onclick="togglePaste()">▶ Excelから売上をまとめて貼り付け</div>
+        <div class="yj-paste" id="yjPasteWrap">
+          <textarea id="yjPasteBox" placeholder="日付と売上を貼り付け\n6/4\t18500\n6/5\t22300"></textarea>
+          <button class="btn btn-auto" style="width:100%;margin-top:6px" onclick="pasteSales()">取り込む</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 今月のサマリー</div>
+      <div class="sum-grid">
+        <div class="sum-item"><div class="sum-num" id="sumTotal">0</div><div class="sum-lbl">Instagram投稿</div></div>
+        <div class="sum-item"><div class="sum-num" id="sumBiz">0</div><div class="sum-lbl">業務予定</div></div>
+        <div class="sum-item"><div class="sum-num" id="sumFood">0</div><div class="sum-lbl">フード・メニュー</div></div>
+        <div class="sum-item"><div class="sum-num" id="sumBts">0</div><div class="sum-lbl">仕込み・ストーリー</div></div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ===== メインエリア ===== -->
+  <main class="main-area">
+    <div class="month-bar">
+      <div class="month-nav">
+        <button class="icon-btn" onclick="shiftMonth(-1)">◀</button>
+        <div class="month-title" id="monthLabel"></div>
+        <button class="icon-btn" onclick="shiftMonth(1)">▶</button>
+        <button class="icon-btn" onclick="goToday()" title="今月">⌂</button>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-ghost" onclick="resetMonth()">🔄 リセット</button>
+        <button class="btn btn-auto"  onclick="autoSchedule()">✦ 自動スケジュール</button>
+      </div>
+    </div>
+
+    <div class="legend-bar" id="legendBar"></div>
+
+    <div class="calendar">
+      <div class="cal-head">
+        <span>日</span><span>月</span><span>火</span><span>水</span>
+        <span>木</span><span>金</span><span>土</span>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+  </main>
+</div>
+
+<!-- モバイル FAB -->
+<button class="mobile-fab" onclick="autoSchedule()">✦ 自動スケジュール</button>
+
+<!-- ===== 編集モーダル ===== -->
+<div class="overlay" id="overlay" onclick="bgClose(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="mTitle">スケジュールを編集</h3>
+      <div class="sub" id="mSub"></div>
+    </div>
+    <div class="modal-body">
+      <!-- メインタブ：Instagram / 業務予定 -->
+      <div class="tabs" id="mainTabs">
+        <button class="tab-btn active" onclick="swMainTab('insta',this)">📸 Instagram</button>
+        <button class="tab-btn"        onclick="swMainTab('biz',this)">📋 業務予定</button>
+        <button class="tab-btn"        onclick="swMainTab('report',this)">📒 日報</button>
+      </div>
+
+      <!-- ── Instagram タブ ── -->
+      <div class="tab-panel active" id="tabInsta">
+        <div class="tabs" style="margin-bottom:10px">
+          <button class="tab-btn active" onclick="swTab('edit',this)">✏️ 編集</button>
+          <button class="tab-btn" onclick="swTab('suggest',this)">💡 アイデア</button>
+        </div>
+        <div class="tab-panel active" id="tabEdit">
+          <div style="margin-bottom:10px">
+            <label>コンテンツ種別</label>
+            <select id="mTheme" onchange="onThemeChange()"></select>
+          </div>
+          <div style="margin-bottom:10px">
+            <label>投稿タイトル・1行目</label>
+            <input type="text" id="mCaption" placeholder="例：今日も手作りソーセージ仕込み中🔪">
+          </div>
+          <div style="margin-bottom:10px">
+            <label>ハッシュタグ・本文メモ</label>
+            <textarea id="mNote" placeholder="#高岡グルメ #ホットドッグ #無添加"></textarea>
+          </div>
+          <div style="margin-bottom:10px">
+            <label>投稿時刻</label>
+            <input type="time" id="mTime" value="12:00">
+          </div>
+          <div id="photoHint" class="photo-hint" style="display:none"></div>
+        </div>
+        <div class="tab-panel" id="tabSuggest">
+          <div style="margin-bottom:8px">
+            <label>種別でフィルター</label>
+            <select id="sugFilter" onchange="renderSugg()"></select>
+          </div>
+          <div class="suggest-list" id="suggList"></div>
+        </div>
+      </div>
+
+      <!-- ── 業務予定 タブ ── -->
+      <div class="tab-panel" id="tabBiz">
+        <div class="biz-list" id="bizList"></div>
+        <div class="biz-add">
+          <div class="biz-add-row">
+            <select id="bizCat"></select>
+            <input type="text" id="bizTitle" placeholder="例：豚肉・野菜 搬入">
+            <input type="time" id="bizTime" value="10:00">
+          </div>
+          <button class="btn btn-biz-add" onclick="addBizEvent()">➕ 追加</button>
+        </div>
+      </div>
+
+      <!-- ── 日報 タブ ── -->
+      <div class="tab-panel" id="tabReport">
+        <div class="rep-grid">
+          <div class="rep-full"><label>売上（円）</label><input type="number" id="rSales" inputmode="numeric" placeholder="0"></div>
+          <div><label>天気</label><input type="text" id="rWeather" placeholder="晴れ"></div>
+          <div><label>客数（名）</label><input type="number" id="rCust" inputmode="numeric" placeholder="0"></div>
+          <div><label>夜の組数（組）</label><input type="number" id="rNight" inputmode="numeric" placeholder="0"></div>
+          <div></div>
+          <div class="rep-full"><label>メモ</label><textarea id="rMemo" placeholder="今日の出来事・気づきなど"></textarea></div>
+        </div>
+        <div class="rep-yj"><span>日予算との差</span><span class="big" id="rYjVal">—</span></div>
+        <div class="rep-actions">
+          <button class="btn btn-ghost" style="flex:1" onclick="copyDayReport()">📋 日報をコピー</button>
+          <button class="btn btn-auto" style="flex:1" onclick="saveReport()">💾 日報を保存</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-foot" id="modalFoot">
+      <button class="btn btn-danger del" id="mDelBtn" onclick="deletePost()">🗑 削除</button>
+      <button class="btn btn-ghost" onclick="closeModal()">✕ 閉じる</button>
+      <button class="btn btn-auto" id="mSaveBtn" onclick="savePost()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== QRコードモーダル ===== -->
+<div class="overlay" id="qrOverlay" onclick="bgCloseQr(event)">
+  <div class="modal qr-modal">
+    <div class="modal-head">
+      <h3>📱 スマートフォンで開く</h3>
+      <div class="sub" id="qrSub">同じWi-Fiに接続したスマホで読み取ってください</div>
+    </div>
+    <div class="qr-body">
+      <div id="qrSpinner" style="padding:40px 0;text-align:center;color:#aaa;font-size:.85rem;">📡 ネットワークアドレスを取得中…</div>
+      <div id="qrCanvas" style="display:none;margin:0 auto 12px;"></div>
+      <div class="qr-url" id="qrUrlText" style="display:none;"></div>
+      <p class="qr-note" id="qrNote" style="display:none;">
+        SafariまたはChromeの「ホーム画面に追加」でアプリのようにインストールも可能です。
+      </p>
+    </div>
+    <div class="modal-foot" style="justify-content:center">
+      <button class="btn btn-auto" onclick="closeQr()">✕ 閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- QRコードライブラリ -->
+<script src="qrcode.min.js"></script>
+
+<script>
+// ============================================================
+// コンテンツ定義
+// ============================================================
+const THEMES = [
+  { id:'menu',    icon:'🌭', name:'メニュー・フード写真',   desc:'ホットドッグ・ナチョス・スモークナッツの映え写真。開店日（水）に告知を兼ねて投稿。',   color:'#c0392b', group:'food', bestDow:[3], bestTime:'11:00', tags:['認知','食欲訴求'] },
+  { id:'making',  icon:'🔪', name:'仕込み・製造工程',       desc:'ソーセージ作り・食材選び・腸詰め。無添加こだわりを伝える。定休の月曜に撮影→投稿が◎。', color:'#8B4513', group:'bts',  bestDow:[1], bestTime:'10:00', tags:['差別化','保存率↑'] },
+  { id:'story',   icon:'📖', name:'こだわり・ストーリー',   desc:'無添加の理由・胚芽パンの秘密・山元醸造との出会い・オーナーの想い。新メニューなくてもOK。', color:'#8e44ad', group:'bts',  bestDow:[2], bestTime:'12:00', tags:['フォロワー獲得','共感'] },
+  { id:'shop',    icon:'🏠', name:'お店の雰囲気・内装',     desc:'レトロアメリカンな空間・こだわり雑貨・カウンター席。「行きたい！」を作る空間紹介。',     color:'#d4a017', group:'bts',  bestDow:[4], bestTime:'12:00', tags:['認知','来店動機'] },
+  { id:'bar',     icon:'🌃', name:'バータイム告知',         desc:'金・土18〜22時。大人の夜ご飯・一人飲みに。夕方17時投稿で「今夜どこ行く？」層を狙い撃ち。', color:'#2c3e50', group:'bar',  bestDow:[5], bestTime:'17:00', tags:['来店促進','夜の客層'] },
+  { id:'reel',    icon:'🎬', name:'リール・ショート動画',   desc:'焼く音・切る瞬間・仕込み風景・店主の一日。15〜30秒でOK。アルゴリズム最優遇。',           color:'#8e44ad', group:'bar',  bestDow:[6], bestTime:'19:00', tags:['リーチ最大','アルゴリズム優遇'] },
+  { id:'local',   icon:'🤝', name:'地域・コラボ・お客様',   desc:'山元醸造コラボ・高岡まちなか情報・お客様の声・地域イベント。タグ付けで相互拡散。',         color:'#16a085', group:'food', bestDow:[4], bestTime:'12:00', tags:['地域拡散','信頼構築'] },
+];
+const THEME_MAP = Object.fromEntries(THEMES.map(t => [t.id, t]));
+const CLOSED_DOW = new Set([0,1,2]);
+
+const TIPS = [
+  { icon:'📅', body:'<strong>定休日こそ投稿のゴールデンタイム。</strong>月・火は余裕を持って仕込み中の写真を撮り、予約投稿が◎。営業中に投稿する必要はゼロ。' },
+  { icon:'🎬', body:'<strong>「音あり動画」がアルゴリズム最強。</strong>ソーセージを焼く音、切る瞬間だけで十分。特別な編集不要。土曜夜リールで週末リーチを狙う。' },
+  { icon:'💾', body:'<strong>「無添加」「手作り」は保存される投稿。</strong>健康志向の人が保存→後でフォローが鉄板パターン。素材・製法の解説は定期的に。' },
+  { icon:'📍', body:'<strong>地名タグを必ず入れる。</strong>#高岡グルメ #富山グルメ #高岡ランチ はローカル発見の命綱。地域の潜在顧客にリーチできる唯一の手段。' },
+  { icon:'🌃', body:'<strong>バータイム（金・土夜）は別客層へのアプローチ。</strong>昼客とは違う30代以上の大人向け。夕方17時投稿で「今夜どこ行く？」層を狙い撃ち。' },
+  { icon:'🤝', body:'<strong>山元醸造をタグ付けすると相互拡散のチャンス。</strong>老舗フォロワーにもリーチ。地域ネットワークを最大活用。' },
+  { icon:'♻️', body:'<strong>週4投稿を継続することが最優先。</strong>質より継続。自動スケジュールで仕組み化を。' },
+];
+
+// ============================================================
+// 投稿アイデアプール
+// ============================================================
+const POOL = {
+  menu: [
+    { title:'プレーンドッグ🌭 シンプルが一番うまい',           note:'#ホットドッグ #高岡グルメ #無添加ソーセージ #高岡ランチ #HiCKSLOCALSTAND', photo:'バンズにソーセージをのせた断面を真上から。自然光で素材感を出す' },
+    { title:'チリドッグ🌶 スパイスが効いてやみつきになる',     note:'#チリドッグ #高岡グルメ #スパイス #高岡ランチ #ホットドッグ',           photo:'チリソースをかける瞬間を斜め45°から。湯気があれば◎' },
+    { title:'チーズドッグ🧀 とろけるチーズ×手作りソーセージ', note:'#チーズドッグ #高岡グルメ #チーズ #無添加 #ホットドッグ',               photo:'とろけるチーズが伸びる瞬間を接写。暗めの背景だと映える' },
+    { title:'スモークナッツ🌰 おつまみにも、おやつにも',       note:'#スモークナッツ #手作り #無添加 #おつまみ #HiCKSLOCALSTAND',           photo:'ナッツを木の器にこぼすように盛り付け。温かみある照明で' },
+    { title:'ポテト＆ドリンクセット🍟 +500円でお得ランチ',     note:'#高岡ランチ #ホットドッグ #コスパ最高 #高岡グルメ #末広町ランチ',       photo:'ドッグ・ポテト・ドリンクを横並びで真上から。テーブルのテクスチャを活かす' },
+    { title:'本日の一枚📸 今日もこの子たちが揃ってます',       note:'#ホットドッグ #高岡グルメ #手作り #無添加 #高岡ランチ',               photo:'今日のメニュー全品を一列に並べ真上から。清潔感と統一感を意識' },
+  ],
+  making: [
+    { title:'今日も仕込み中🔪 ひとつひとつ手作りです',           note:'#手作りソーセージ #無添加 #仕込み #こだわり #HiCKSLOCALSTAND',   photo:'手元アップで仕込み作業中を撮影。手と素材が両方見えるように' },
+    { title:'無添加ソーセージの材料はこれだけです',               note:'#無添加 #食の安心 #こだわり素材 #手作りソーセージ #高岡',           photo:'使う材料（豚肉・ハーブ・スパイス）を白い台の上に並べ真上から' },
+    { title:'この「プリッ」を作るのが楽しくて仕方ない',           note:'#手作りソーセージ #腸詰め #製造工程 #こだわり #無添加',             photo:'腸詰め作業の手元アップ。工程の「生感」を出すのがポイント' },
+    { title:'ハーブとスパイスのブレンドが命です🌿',               note:'#スパイス #ハーブ #無添加ソーセージ #手作り #HiCKSLOCALSTAND', photo:'小皿に並べたスパイス類を上から。色のコントラストを活かして' },
+    { title:'明日の開店に向けて、今日は仕込みデー',               note:'#仕込み #開店準備 #ワンオペ #手作り #高岡グルメ',                   photo:'仕込み中の全体風景をカウンター越しに。ワンオペ感が伝わる構図' },
+    { title:'胚芽パン🍞 実はこのパンも特注品なんです',           note:'#胚芽パン #こだわりパン #特注 #ホットドッグ #無添加',               photo:'並んだバンズを斜め上から。素朴な質感が伝わるよう自然光で' },
+  ],
+  story: [
+    { title:'なぜ無添加にこだわるのか。正直に話します',           note:'#無添加 #食の安心 #こだわり #オーナーの想い #HiCKSLOCALSTAND', photo:'手書きのメモを添えたオーナーの手元写真。顔は映さなくてもOK' },
+    { title:'市販のソーセージと何が違うの？実は…',               note:'#無添加 #添加物不使用 #手作りソーセージ #食の安全 #高岡グルメ',   photo:'手作りソーセージと素材（豚肉・ハーブ）を並べた比較写真' },
+    { title:'地元・高岡の醤油を使う理由🍶',                       note:'#山元醸造 #室屋長兵衛 #高岡 #地産地消 #ローカル',                 photo:'醤油瓶と食材を一緒に。ラベルが読めるよう瓶を正面に向けて' },
+    { title:'「HiCKS LOCAL STAND」という名前の由来',               note:'#高岡 #ホットドッグ #HiCKSLOCALSTAND #店名の由来 #ローカル',   photo:'店の看板や外観を撮影。タイポグラフィがはっきり見えるアングルで' },
+    { title:'ホットドッグをメインにした理由、聞きますか？',       note:'#オーナーストーリー #開業 #高岡 #ホットドッグ #飲食店開業',       photo:'調理中のシルエット or バストショット。ストーリー感重視' },
+    { title:'お子さんにも安心して食べてほしい。だから無添加',     note:'#無添加 #子供も安心 #ファミリー #食の安全 #高岡グルメ',           photo:'子どもが食べやすいサイズのドッグを柔らかい光で。ほっこり感を出す' },
+  ],
+  shop: [
+    { title:'このレトロな空間、どこかに連れてかれそうでしょ',     note:'#アメリカンダイナー #レトロ #高岡カフェ #内装 #HiCKSLOCALSTAND', photo:'店内全体を入口付近から広角で。雑貨や小物が映り込む構図がベスト' },
+    { title:'店内の雑貨、全部こだわって選びました🎸',             note:'#インテリア #雑貨 #アメリカン #高岡 #HiCKSLOCALSTAND',          photo:'お気に入りの雑貨を接写。背景をぼかして雰囲気を演出' },
+    { title:'カウンター席、実は特等席なんです☕',                   note:'#カウンター席 #高岡グルメ #一人ランチ #居心地 #高岡',             photo:'カウンター席に料理を置いた状態を斜め前から。お客目線のアングル' },
+    { title:'関野神社のすぐ近く。穴場スポット発見📍',             note:'#高岡 #末広町 #関野神社 #穴場グルメ #高岡ランチ',               photo:'店外観と周辺の街並み。看板と神社が一緒に入ると◎' },
+  ],
+  bar: [
+    { title:'今夜もバータイム🍺 18時〜22時、待ってます',           note:'#高岡バー #夜ご飯 #バータイム #金曜夜 #高岡グルメ',             photo:'夜の店内照明をいかしたドリンクショット。グラスに光を当てて輝かせる' },
+    { title:'週末の〆に🥂 大人のホットドッグ時間',               note:'#高岡バー #土曜夜 #大人の時間 #バータイム #高岡',               photo:'ドッグとドリンクを並べた夜のテーブルショット。暗めで雰囲気重視' },
+    { title:'仕事帰りにふらっと寄れるスタンドです🌃',             note:'#高岡 #仕事帰り #バータイム #一人飲み #高岡グルメ',             photo:'夜の外観に灯りがついた様子を通りから撮影。温かみのある光が◎' },
+    { title:'金・土の夜だけ、スナックとお酒が楽しめます🌙',       note:'#高岡バー #スナック #おつまみ #バータイム #HiCKSLOCALSTAND', photo:'おつまみとドリンクを暗い背景で接写。ライティングでドラマチックに' },
+  ],
+  reel: [
+    { title:'🎬【音あり推奨】ソーセージを焼く音、最高です',       note:'#ホットドッグ #ASMR #高岡グルメ #手作りソーセージ #HiCKSLOCALSTAND', photo:'【動画】フライパンに置く瞬間〜焼き上がりまでを接写で縦動画（15〜30秒）' },
+    { title:'🎬 仕込みから完成まで30秒で見せます',               note:'#手作りソーセージ #仕込み #高岡グルメ #リール #無添加',               photo:'【動画】素材→仕込み→焼き→完成の4カットをつなぐ縦動画。BGMは明るいものを' },
+    { title:'🎬【高岡グルメ】こんなお店あったの？',               note:'#高岡グルメ #穴場 #高岡 #ホットドッグ #富山グルメ',                 photo:'【動画】店外〜店内〜商品の順に歩きながら撮影。アクセス情報テロップを入れると◎' },
+    { title:'🎬 プリッとはじける瞬間を見てほしい',               note:'#ホットドッグ #手作りソーセージ #高岡グルメ #リール #食べ物動画',     photo:'【動画】ソーセージを箸で割る瞬間を接写。スローモーションがあれば活用' },
+    { title:'🎬 店主の開店前ルーティン（ワンオペの朝）',         note:'#ワンオペ #高岡 #開業 #飲食店 #HiCKSLOCALSTAND',                   photo:'【動画】開店準備の朝〜開店まで1分以内にまとめた縦動画。時間テロップを入れると◎' },
+    { title:'🎬 スモークナッツができるまでの30秒',               note:'#スモークナッツ #燻製 #手作り #無添加 #高岡グルメ',                 photo:'【動画】燻製器への投入〜煙〜完成まで縦動画で。香りが伝わるコメントを入れると◎' },
+  ],
+  local: [
+    { title:'地元・山元醸造さんの醤油を使っています🍶',           note:'#山元醸造 #室屋長兵衛 #高岡 #地産地消 #ローカル',                 photo:'醤油瓶と使った料理を並べて。地元感が出るよう店内背景も入れる' },
+    { title:'TASUさん・高岡信用金庫さんのおかげで開業できました', note:'#高岡 #TASU #まちなかスタートアップ #高岡信用金庫 #感謝',         photo:'感謝を伝えるテキスト投稿 or 開業当時の写真があれば使用' },
+    { title:'高岡まちなかに来たら、ぜひ寄ってみてください📍',     note:'#高岡 #まちなかグルメ #末広町 #高岡ランチ #富山グルメ',           photo:'地図スクリーンショット＋店外観の2枚スライド。アクセス情報も添える' },
+    { title:'お客様の声📣「また来ます！」ありがとうございます',   note:'#お客様の声 #高岡グルメ #ありがとう #HiCKSLOCALSTAND #口コミ', photo:'温かい雰囲気の店内写真に感謝テキストを重ねる。顔は映さないよう注意' },
+    { title:'ペット用おやつも作っています🐾 天然素材だけで',     note:'#ペットおやつ #天然素材 #無添加 #犬のおやつ #高岡',             photo:'ペットおやつを小皿に盛り付け接写。かわいらしいアングルで癒やし感を' },
+  ],
+};
+
+// ============================================================
+// 週次テンプレート
+// ============================================================
+const WEEK_ODD  = [ {dow:1,id:'making',t:'10:00'},{dow:2,id:'story', t:'12:00'},{dow:3,id:'menu',t:'11:00'},{dow:4,id:'local',t:'12:00'},{dow:5,id:'bar',t:'17:00'},{dow:6,id:'reel',t:'19:00'} ];
+const WEEK_EVEN = [ {dow:1,id:'making',t:'10:00'},{dow:2,id:'shop',  t:'12:00'},{dow:3,id:'menu',t:'11:00'},{dow:4,id:'shop', t:'12:00'},{dow:5,id:'bar',t:'17:00'},{dow:6,id:'reel',t:'10:00'} ];
+
+const poolIdx = {};
+THEMES.forEach(t => { poolIdx[t.id] = 0; });
+function nextPool(id) {
+  const p = POOL[id] || [];
+  if (!p.length) return {title:'',note:''};
+  const item = p[poolIdx[id] % p.length];
+  poolIdx[id]++;
+  return item;
+}
+
+// ============================================================
+// データ
+// ============================================================
+// 業務カテゴリ
+const BIZ_CATS = [
+  { id:'delivery', icon:'📦', name:'仕入れ・搬入',      color:'#2980b9' },
+  { id:'appo',     icon:'🤝', name:'アポ・打ち合わせ',  color:'#8e44ad' },
+  { id:'maint',    icon:'🔧', name:'設備・メンテ',       color:'#7f8c8d' },
+  { id:'admin',    icon:'📋', name:'その他業務',         color:'#27ae60' },
+];
+const BIZ_MAP = Object.fromEntries(BIZ_CATS.map(c => [c.id, c]));
+
+let S = (() => {
+  try {
+    const r = localStorage.getItem('hicks_v2');
+    if (r) {
+      const d = JSON.parse(r);
+      if (!d.bizEvents) d.bizEvents = {};
+      if (!d.reports) d.reports = {};
+      if (!d.budget) d.budget = { mb:0, days:0, override:null };
+      return d;
+    }
+  } catch(e) {}
+  const n = new Date();
+  return { posts:{}, bizEvents:{}, reports:{}, budget:{ mb:0, days:0, override:null }, year:n.getFullYear(), month:n.getMonth(), _ts:0 };
+})();
+
+// ── サーバー同期 ──────────────────────────────────────────
+// ローカルネットワーク（PC起動時）かどうかを判定
+const IS_LOCAL_NET = /^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2\d|3[01]))/.test(location.hostname);
+
+let _syncBusy = false;
+async function syncFromServer() {
+  if (!IS_LOCAL_NET || _syncBusy) return; // 公開URL上では同期しない
+  _syncBusy = true;
+  try {
+    const res = await fetch('/api/data?t=' + Date.now());
+    if (!res.ok) return;
+    const remote = await res.json();
+    if (!remote || !remote.posts) return;
+    if (!remote._ts) remote._ts = 0;
+    if (!S._ts) S._ts = 0;
+    if (remote._ts > S._ts) {
+      S = remote;
+      if (!S.bizEvents) S.bizEvents = {};
+      if (!S.reports) S.reports = {};
+      if (!S.budget) S.budget = { mb:0, days:0, override:null };
+      localStorage.setItem('hicks_v2', JSON.stringify(S));
+      renderCalendar();
+      showSyncBadge('🔄 PC側の変更を取り込みました');
+    }
+  } catch(e) {} finally { _syncBusy = false; }
+}
+async function pushToServer() {
+  if (!IS_LOCAL_NET) return; // 公開URL上では送信しない
+  try {
+    await fetch('/api/data', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(S)
+    });
+  } catch(e) {}
+}
+function showSyncBadge(msg) {
+  const el = document.getElementById('syncBadge');
+  if (!el) return;
+  el.textContent = msg; el.style.opacity = '1';
+  setTimeout(() => { el.style.opacity = '0'; }, 2800);
+}
+function save() {
+  S._ts = Date.now();
+  localStorage.setItem('hicks_v2', JSON.stringify(S));
+  pushToServer();
+}
+// ページ表示時にサーバーから最新を取得（ローカルのみ）、以降15秒おきに同期
+window.addEventListener('DOMContentLoaded', () => {
+  if (IS_LOCAL_NET) {
+    syncFromServer();
+    setInterval(syncFromServer, 15000);
+  }
+});
+// ────────────────────────────────────────────────────────────
+
+function fmt(y,m,d) { return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+// ============================================================
+// 自動スケジュール
+// ============================================================
+function autoSchedule() {
+  const {year:y, month:m} = S;
+  const days = new Date(y,m+1,0).getDate();
+  THEMES.forEach(t => { poolIdx[t.id] = 0; });
+  for (let d=1;d<=days;d++) { const k=fmt(y,m,d); if(S.posts[k]?.auto) delete S.posts[k]; }
+  for (let d=1;d<=days;d++) {
+    const dow = new Date(y,m,d).getDay();
+    const wk  = Math.ceil(d/7);
+    const tpl = (wk%2===1) ? WEEK_ODD : WEEK_EVEN;
+    const slot = tpl.find(s => s.dow===dow);
+    if (!slot) continue;
+    const k = fmt(y,m,d);
+    if (S.posts[k] && !S.posts[k].auto) continue;
+    const idea = nextPool(slot.id);
+    S.posts[k] = {themeId:slot.id, title:idea.title, note:idea.note, photo:idea.photo||'', time:slot.t, auto:true};
+  }
+  applySpecial(y,m,days);
+  save(); renderCalendar();
+  toast('✦ 自動スケジュールを適用しました！');
+}
+
+function applySpecial(y,m,days) {
+  for (let d=1;d<=7;d++) {
+    if (new Date(y,m,d).getDay()===3) {
+      const k=fmt(y,m,d);
+      if (!S.posts[k]||S.posts[k].auto) S.posts[k]={themeId:'menu',title:`${m+1}月スタート🌭 今月もよろしくお願いします`,note:'#高岡グルメ #高岡ランチ #ホットドッグ #HiCKSLOCALSTAND #無添加',time:'11:00',auto:true};
+      break;
+    }
+  }
+  for (let d=days;d>=days-6;d--) {
+    const dow=new Date(y,m,d).getDay();
+    if (dow===4||dow===3) {
+      const k=fmt(y,m,d);
+      if (!S.posts[k]||S.posts[k].auto) S.posts[k]={themeId:'local',title:`今月もありがとうございました🙏 来月もよろしくお願いします`,note:'#高岡グルメ #ありがとう #HiCKSLOCALSTAND #高岡 #感謝',time:'12:00',auto:true};
+      break;
+    }
+  }
+}
+
+// ============================================================
+// カレンダー描画
+// ============================================================
+const WDAYS = ['日','月','火','水','木','金','土'];
+
+function renderCalendar() {
+  const {year:y,month:m} = S;
+  document.getElementById('monthLabel').textContent = `${y}年${m+1}月`;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const firstDow = new Date(y,m,1).getDay();
+  const dim = new Date(y,m+1,0).getDate();
+  const prevDim = new Date(y,m,0).getDate();
+  const todayStr = fmt(new Date().getFullYear(),new Date().getMonth(),new Date().getDate());
+
+  for (let i=firstDow-1;i>=0;i--) grid.appendChild(buildCell(prevDim-i,y,m-1,true));
+  for (let d=1;d<=dim;d++) { const ds=fmt(y,m,d); grid.appendChild(buildCell(d,y,m,false,ds,ds===todayStr)); }
+  const tot=firstDow+dim; const rem=tot%7===0?0:7-(tot%7);
+  for (let d=1;d<=rem;d++) grid.appendChild(buildCell(d,y,m+1,true));
+  renderSummary();
+  renderBudget();
+}
+
+function buildCell(day,y,m,isOther,ds,isToday) {
+  const cell = document.createElement('div');
+  cell.className = 'cal-cell';
+  if (isOther) { cell.classList.add('other-month'); return cell; }
+  const dow = new Date(y,m,day).getDay();
+  if (CLOSED_DOW.has(dow)) cell.classList.add('closed');
+  if (dow===0) cell.classList.add('sun');
+  if (dow===6) cell.classList.add('sat');
+  if (isToday) cell.classList.add('today');
+
+  const row = document.createElement('div'); row.className='day-row';
+  const num = document.createElement('div'); num.className='day-num'; num.textContent=day;
+  row.appendChild(num);
+  if (CLOSED_DOW.has(dow) && dow!==0) {
+    const lb=document.createElement('span'); lb.className='closed-lbl'; lb.textContent='定休'; row.appendChild(lb);
+  }
+  cell.appendChild(row);
+
+  if (ds) {
+    const post=S.posts[ds];
+    if (post?.themeId) {
+      const th=THEME_MAP[post.themeId];
+      if (th) {
+        const tag=document.createElement('div'); tag.className='post-tag';
+        tag.style.background=th.color+'1a'; tag.style.color=th.color; tag.style.border=`1px solid ${th.color}44`;
+        tag.textContent=post.title||th.name; tag.title=post.title||th.name;
+        cell.appendChild(tag);
+        if (post.time) { const t=document.createElement('div'); t.className='post-time'; t.textContent='⏰ '+post.time; cell.appendChild(t); }
+      }
+    }
+    // 業務予定タグ
+    (S.bizEvents[ds] || []).forEach(ev => {
+      const cat = BIZ_MAP[ev.cat] || BIZ_CATS[3];
+      const bt = document.createElement('div'); bt.className='biz-tag';
+      bt.style.cssText=`background:${cat.color}18;color:${cat.color};border:1px solid ${cat.color}40`;
+      bt.textContent=cat.icon+' '+ev.title; bt.title=ev.title;
+      cell.appendChild(bt);
+    });
+    const rep=S.reports?S.reports[ds]:null;
+    if (rep && +rep.sales>0) {
+      const db=dailyBudget();
+      const chip=document.createElement('div');
+      chip.className='sales-chip'+(db>0 && (+rep.sales)<db?' under':'');
+      chip.textContent='💴 '+fyen(rep.sales);
+      cell.appendChild(chip);
+    }
+    const add=document.createElement('div'); add.className='cell-add'; add.textContent='+';
+    cell.appendChild(add);
+    cell.onclick=()=>openModal(ds);
+  }
+  return cell;
+}
+
+function renderSummary() {
+  const {year:y,month:m}=S; const days=new Date(y,m+1,0).getDate();
+  let total=0,food=0,bts=0,biz=0;
+  for (let d=1;d<=days;d++) {
+    const k=fmt(y,m,d);
+    const p=S.posts[k]; if (p?.themeId) { total++; const t=THEME_MAP[p.themeId]; if(t){ if(t.group==='food')food++; if(t.group==='bts')bts++; } }
+    biz += (S.bizEvents[k]||[]).length;
+  }
+  document.getElementById('sumTotal').textContent=total;
+  document.getElementById('sumBiz').textContent=biz;
+  document.getElementById('sumFood').textContent=food;
+  document.getElementById('sumBts').textContent=bts;
+}
+
+// ============================================================
+// サイドバー描画
+// ============================================================
+function renderSidebar() {
+  // コンテンツ種別
+  const ct=document.getElementById('ctList');
+  THEMES.forEach(t=>{
+    const row=document.createElement('div'); row.className='ct-row'; row.style.borderLeftColor=t.color;
+    row.innerHTML=`<div class="ct-icon">${t.icon}</div><div class="ct-body"><div class="ct-name">${t.name}</div><div class="ct-desc">${t.desc}</div><div class="ct-meta">${t.tags.map(tg=>`<span class="micro" style="background:${t.color}cc;color:#fff">${tg}</span>`).join('')}<span class="micro" style="background:#eee;color:#666">${WDAYS[t.bestDow[0]]}曜 ${t.bestTime}</span></div></div>`;
+    ct.appendChild(row);
+  });
+  // Tips
+  const tl=document.getElementById('tipsList');
+  TIPS.forEach(ti=>{ const d=document.createElement('div'); d.className='tip'; d.innerHTML=`<div class="tip-icon">${ti.icon}</div><div class="tip-body">${ti.body}</div>`; tl.appendChild(d); });
+  // 凡例
+  const lg=document.getElementById('legendBar'); lg.innerHTML='<span class="legend-title">凡例</span>';
+  THEMES.forEach(t=>{ const i=document.createElement('div'); i.className='legend-item'; i.innerHTML=`<span class="legend-dot" style="background:${t.color}"></span>${t.icon} ${t.name}`; lg.appendChild(i); });
+}
+
+// ============================================================
+// アコーディオン
+// ============================================================
+function toggleAccordion(btn) {
+  const body = btn.nextElementSibling;
+  const isOpen = btn.classList.contains('open');
+  if (isOpen) {
+    body.style.maxHeight = '0';
+    btn.classList.remove('open');
+  } else {
+    body.style.maxHeight = body.scrollHeight + 'px';
+    btn.classList.add('open');
+    // scrollHeight が足りない場合に再計算
+    setTimeout(()=>{ body.style.maxHeight = body.scrollHeight + 'px'; }, 50);
+  }
+}
+
+// ============================================================
+// モーダル
+// ============================================================
+// ============================================================
+// 業務予定 関数
+// ============================================================
+function renderBizList() {
+  const list = document.getElementById('bizList'); list.innerHTML = '';
+  const evts = (S.bizEvents[editingDate] || []);
+  if (!evts.length) {
+    list.innerHTML='<div style="color:#bbb;font-size:.78rem;padding:6px 2px">業務予定はまだありません</div>'; return;
+  }
+  evts.forEach(ev => {
+    const cat = BIZ_MAP[ev.cat] || BIZ_CATS[3];
+    const item=document.createElement('div'); item.className='biz-item';
+    item.innerHTML=`<div class="biz-item-icon">${cat.icon}</div><div class="biz-item-body"><div class="biz-item-title">${ev.title}</div><div class="biz-item-meta">${cat.name}${ev.time?' · ⏰ '+ev.time:''}</div></div><button class="biz-del" onclick="deleteBiz('${ev.id}')">✕</button>`;
+    list.appendChild(item);
+  });
+}
+
+function addBizEvent() {
+  const cat=document.getElementById('bizCat').value;
+  const title=document.getElementById('bizTitle').value.trim();
+  const time=document.getElementById('bizTime').value;
+  if (!title) { toast('タイトルを入力してください'); return; }
+  if (!S.bizEvents[editingDate]) S.bizEvents[editingDate]=[];
+  S.bizEvents[editingDate].push({id:'biz_'+Date.now(), cat, title, time});
+  document.getElementById('bizTitle').value='';
+  save(); renderCalendar(); renderBizList();
+  toast('✅ 業務予定を追加しました');
+}
+
+function deleteBiz(id) {
+  if (!S.bizEvents[editingDate]) return;
+  S.bizEvents[editingDate]=S.bizEvents[editingDate].filter(e=>e.id!==id);
+  if (!S.bizEvents[editingDate].length) delete S.bizEvents[editingDate];
+  save(); renderCalendar(); renderBizList();
+  toast('🗑️ 削除しました');
+}
+
+// メインタブ切替（Instagram ↔ 業務予定 ↔ 日報）
+function swMainTab(tab, btn) {
+  document.querySelectorAll('#mainTabs .tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tabInsta').classList.toggle('active', tab==='insta');
+  document.getElementById('tabBiz').classList.toggle('active', tab==='biz');
+  document.getElementById('tabReport').classList.toggle('active', tab==='report');
+  const isInsta = tab==='insta';
+  document.getElementById('mSaveBtn').style.display = isInsta ? '' : 'none';
+  document.getElementById('mDelBtn').style.display  = (isInsta && S.posts[editingDate]) ? '' : 'none';
+  if (tab==='biz') renderBizList();
+  if (tab==='report') renderReportTab();
+}
+
+// ============================================================
+// 編集モーダル
+// ============================================================
+let editingDate = null;
+function openModal(ds) {
+  editingDate=ds;
+  const d=new Date(ds+'T00:00:00'); const dow=d.getDay();
+  document.getElementById('mTitle').textContent=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${WDAYS[dow]}）`;
+  document.getElementById('mSub').textContent=CLOSED_DOW.has(dow)?'定休日（自宅・仕込みからの投稿推奨）':'営業日'+(dow===5||dow===6?' · バータイムあり（18〜22時）':'');
+
+  // Instagramセレクト
+  const sel=document.getElementById('mTheme'); sel.innerHTML='<option value="">（投稿なし）</option>';
+  const sf=document.getElementById('sugFilter'); sf.innerHTML='<option value="">すべて</option>';
+  THEMES.forEach(t=>{ const o=document.createElement('option'); o.value=t.id; o.textContent=`${t.icon} ${t.name}`; sel.appendChild(o.cloneNode(true)); sf.appendChild(o); });
+  const post=S.posts[ds];
+  sel.value=post?.themeId||''; document.getElementById('mCaption').value=post?.title||''; document.getElementById('mNote').value=post?.note||''; document.getElementById('mTime').value=post?.time||'12:00';
+  if (!post) { const sg=THEMES.find(t=>t.bestDow.includes(dow)); if(sg) sel.value=sg.id; }
+  // 撮影ヒント表示
+  const hintEl=document.getElementById('photoHint');
+  if(post?.photo){ hintEl.textContent=post.photo; hintEl.style.display='flex'; }
+  else { hintEl.style.display='none'; hintEl.textContent=''; }
+
+  // 業務カテゴリセレクト
+  const bc=document.getElementById('bizCat'); bc.innerHTML='';
+  BIZ_CATS.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=`${c.icon} ${c.name}`; bc.appendChild(o); });
+
+  // メインタブをInstagramに戻す
+  swMainTab('insta', document.querySelector('#mainTabs .tab-btn'));
+  document.getElementById('mDelBtn').style.display=post?'':'none';
+  document.getElementById('mSaveBtn').style.display='';
+  swTab('edit', document.querySelector('#tabInsta .tab-btn'));
+  renderSugg();
+  document.getElementById('overlay').classList.add('open');
+}
+function onThemeChange() { const t=THEME_MAP[document.getElementById('mTheme').value]; if(t) document.getElementById('mTime').value=t.bestTime; }
+function swTab(tab,btn) {
+  // Instagramタブ内のサブタブ（編集/アイデア）
+  const parent = btn?.closest('.tab-panel') || document.getElementById('tabInsta');
+  parent.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  parent.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  const target = document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1));
+  if(target) target.classList.add('active');
+  if(tab==='suggest') renderSugg();
+}
+function renderSugg() {
+  const filter=document.getElementById('sugFilter').value;
+  const list=document.getElementById('suggList'); list.innerHTML='';
+  const src=filter?[[filter,POOL[filter]||[]]]:Object.entries(POOL);
+  src.forEach(([tid,posts])=>{ const th=THEME_MAP[tid]; if(!th) return; posts.forEach(p=>{ const item=document.createElement('div'); item.className='suggest-item'; const photoHtml=p.photo?`<div class="si-photo">${p.photo}</div>`:''; item.innerHTML=`<div class="si-title">${th.icon} ${p.title}</div><div class="si-tags">${p.note.split(' ').slice(0,5).join(' ')}</div>${photoHtml}`; item.onclick=()=>applyIdea(tid,p); list.appendChild(item); }); });
+}
+function applyIdea(tid,idea) {
+  document.getElementById('mTheme').value=tid;
+  document.getElementById('mCaption').value=idea.title;
+  document.getElementById('mNote').value=idea.note;
+  const t=THEME_MAP[tid]; if(t) document.getElementById('mTime').value=t.bestTime;
+  const hintEl=document.getElementById('photoHint');
+  if(idea.photo){ hintEl.textContent=idea.photo; hintEl.style.display='flex'; }
+  else { hintEl.style.display='none'; hintEl.textContent=''; }
+  swTab('edit',document.querySelectorAll('.tab-btn')[0]);
+  toast('💡 アイデアを適用しました');
+}
+function closeModal() { document.getElementById('overlay').classList.remove('open'); editingDate=null; }
+function bgClose(e) { if(e.target.id==='overlay') closeModal(); }
+function savePost() {
+  const tid=document.getElementById('mTheme').value, title=document.getElementById('mCaption').value.trim(), note=document.getElementById('mNote').value.trim(), time=document.getElementById('mTime').value;
+  const hintEl=document.getElementById('photoHint'); const photo=hintEl.style.display!=='none'?hintEl.textContent:'';
+  if(tid||title||note) S.posts[editingDate]={themeId:tid,title,note,photo,time,auto:false}; else delete S.posts[editingDate];
+  save(); renderCalendar(); closeModal(); toast('✅ 保存しました');
+}
+function deletePost() { if(!confirm('この日の投稿を削除しますか？')) return; delete S.posts[editingDate]; save(); renderCalendar(); closeModal(); toast('🗑️ 削除しました'); }
+
+// ============================================================
+// 月移動
+// ============================================================
+function shiftMonth(d) { S.month+=d; if(S.month<0){S.month=11;S.year--;} if(S.month>11){S.month=0;S.year++;} save(); renderCalendar(); }
+function goToday() { const n=new Date(); S.year=n.getFullYear(); S.month=n.getMonth(); save(); renderCalendar(); }
+function resetMonth() { const {year:y,month:m}=S; if(!confirm(`${y}年${m+1}月の投稿をすべてリセットしますか？`)) return; const days=new Date(y,m+1,0).getDate(); for(let d=1;d<=days;d++) delete S.posts[fmt(y,m,d)]; save(); renderCalendar(); toast('🔄 リセットしました'); }
+
+// ============================================================
+// QRコード
+// ============================================================
+function renderQR(url) {
+  const qrDiv = document.getElementById('qrCanvas');
+  qrDiv.innerHTML = '';
+  document.getElementById('qrSpinner').style.display = 'none';
+  qrDiv.style.display = 'block';
+  document.getElementById('qrUrlText').style.display = 'block';
+  document.getElementById('qrNote').style.display = 'block';
+  document.getElementById('qrUrlText').textContent = url;
+  new QRCode(qrDiv, {
+    text: url, width: 220, height: 220,
+    colorDark: '#1a1a1a', colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+}
+
+function showManual() {
+  document.getElementById('qrSub').textContent = 'ターミナルを確認してください';
+  document.getElementById('qrSpinner').innerHTML =
+    '<div style="padding:12px 4px;font-size:.82rem;color:#444;line-height:2;text-align:left">' +
+    '起動時にターミナルに表示された<br>' +
+    '📱 スマートフォンのURLをスマホで開くか、<br>' +
+    '<b>HiCKS Scheduler.app</b> から起動してください。<br><br>' +
+    '<span style="color:#888;font-size:.75rem">または ターミナルで：<br>' +
+    '<code style="background:#f0f0f0;padding:2px 6px;border-radius:4px">ipconfig getifaddr en0</code><br>' +
+    'を実行してIPを確認してください。</span></div>';
+}
+
+async function showQr() {
+  document.getElementById('qrSpinner').style.display = 'block';
+  document.getElementById('qrSpinner').textContent = '📡 アドレスを取得中…';
+  document.getElementById('qrCanvas').style.display = 'none';
+  document.getElementById('qrUrlText').style.display = 'none';
+  document.getElementById('qrNote').style.display = 'none';
+  document.getElementById('qrSub').textContent = '同じWi-Fiのスマホで読み取ってください';
+  document.getElementById('qrOverlay').classList.add('open');
+
+  try {
+    // server.py が書き出す ip.json を取得（キャッシュ回避）
+    const res = await fetch('./ip.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('ip.json not found');
+    const data = await res.json();
+    renderQR(data.url);
+  } catch {
+    // ip.json がない = python3 -m http.server で直接起動している場合
+    const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    if (isLocal) {
+      showManual();
+    } else {
+      renderQR(location.href);
+    }
+  }
+}
+
+function closeQr() { document.getElementById('qrOverlay').classList.remove('open'); }
+function bgCloseQr(e) { if (e.target.id === 'qrOverlay') closeQr(); }
+
+// ============================================================
+// PWA インストール
+// ============================================================
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredInstall = e;
+  document.getElementById('installBtn').style.display = 'flex';
+});
+async function installPwa() {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  await deferredInstall.userChoice;
+  deferredInstall = null;
+  document.getElementById('installBtn').style.display = 'none';
+}
+
+// ============================================================
+// Service Worker 登録
+// ============================================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+
+// ============================================================
+// トースト
+// ============================================================
+function toast(msg) {
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2400);
+}
+
+// ============================================================
+// 予実・日報
+// ============================================================
+function dailyBudget() {
+  const b = S.budget || {};
+  if (b.override !== null && b.override !== undefined && b.override !== '') return +b.override;
+  if (b.mb > 0 && b.days > 0) return Math.round(b.mb / b.days);
+  return 0;
+}
+function fyen(n){ return '¥' + Math.round(n||0).toLocaleString('ja-JP'); }
+function fsign(n){ n=Math.round(n||0); return (n>=0?'+':'−') + '¥' + Math.abs(n).toLocaleString('ja-JP'); }
+
+function onBudgetInput() {
+  S.budget = S.budget || { mb:0, days:0, override:null };
+  S.budget.mb = +document.getElementById('yjMonth').value || 0;
+  S.budget.days = +document.getElementById('yjDays').value || 0;
+  S.budget.override = null; // 月予算/日数を変えたら自動計算に戻す
+  save(); renderBudget();
+}
+function editDaily() {
+  const v = prompt('日割予算を手入力（円）。空欄にすると自動計算（月予算÷営業日数）に戻ります。', dailyBudget() || '');
+  if (v === null) return;
+  S.budget = S.budget || { mb:0, days:0, override:null };
+  S.budget.override = (v.trim() === '') ? null : (parseInt(v.replace(/[^0-9]/g,''),10) || 0);
+  save(); renderBudget();
+}
+function monthYojitsu() {
+  const y=S.year, m=S.month, dim=new Date(y,m+1,0).getDate();
+  const daily=dailyBudget(); let cum=0, daysLogged=0;
+  for (let d=1; d<=dim; d++){ const r=S.reports[fmt(y,m,d)]; if(r && +r.sales>0){ cum+=+r.sales; daysLogged++; } }
+  const mb=(S.budget&&S.budget.mb)||0;
+  return { daily, cum, daysLogged, cumBudget:daily*daysLogged, pace:cum-daily*daysLogged, mb, rate: mb>0?Math.round(cum/mb*100):0, remain: mb>0?mb-cum:0 };
+}
+function renderBudget() {
+  const b=S.budget||{mb:0,days:0,override:null};
+  const mEl=document.getElementById('yjMonth'), dEl=document.getElementById('yjDays');
+  if(!mEl) return;
+  if(document.activeElement!==mEl) mEl.value=b.mb||'';
+  if(document.activeElement!==dEl) dEl.value=b.days||'';
+  document.getElementById('yjDaily').textContent=fyen(dailyBudget());
+  const yj=monthYojitsu();
+  document.getElementById('yjTotal').textContent=fyen(yj.cum);
+  const rEl=document.getElementById('yjRate'); rEl.textContent=yj.mb>0?yj.rate+'%':'—'; rEl.className='v '+(yj.mb>0&&yj.rate>=100?'pos':'');
+  const remEl=document.getElementById('yjRemain');
+  if(yj.mb>0){ remEl.textContent=yj.remain>0?fyen(yj.remain):'達成🎉'; remEl.className='v '+(yj.remain<=0?'pos':''); }
+  else { remEl.textContent='—'; remEl.className='v'; }
+  const pEl=document.getElementById('yjPace');
+  if(yj.daily>0 && yj.daysLogged>0){ pEl.textContent=fsign(yj.pace); pEl.className='v '+(yj.pace>=0?'pos':'neg'); }
+  else { pEl.textContent='—'; pEl.className='v'; }
+}
+function togglePaste(){ document.getElementById('yjPasteWrap').classList.toggle('open'); }
+function pasteSales() {
+  const text=document.getElementById('yjPasteBox').value; const y=S.year, m=S.month; let n=0;
+  text.split(/\r?\n/).forEach(line=>{
+    line=line.trim(); if(!line) return;
+    let cols=line.split('\t').map(c=>c.trim()).filter(Boolean);
+    if(cols.length<2){ const sp=line.split(/\s+/).filter(Boolean); if(sp.length>=2) cols=sp; }
+    if(cols.length<2) return;
+    const dnums=cols[0].match(/\d+/g); if(!dnums) return;
+    const dd=+dnums[dnums.length-1]; const amt=parseInt(cols[cols.length-1].replace(/[^0-9]/g,''),10);
+    if(isNaN(dd)||isNaN(amt)||dd<1||dd>31) return;
+    const k=fmt(y,m,dd);
+    S.reports[k]=Object.assign({}, S.reports[k], {sales:amt}); n++;
+  });
+  if(n===0){ toast('読み取れませんでした'); return; }
+  document.getElementById('yjPasteBox').value='';
+  save(); renderCalendar(); togglePaste();
+  toast('✅ '+n+'日分の売上を取り込みました');
+}
+
+// 日報タブ
+function renderReportTab() {
+  const r=S.reports[editingDate]||{};
+  document.getElementById('rSales').value=r.sales||'';
+  document.getElementById('rWeather').value=r.weather||'';
+  document.getElementById('rCust').value=r.customers||'';
+  document.getElementById('rNight').value=r.nightGroups||'';
+  document.getElementById('rMemo').value=r.memo||'';
+  updateRepYj();
+  document.getElementById('rSales').oninput=updateRepYj;
+}
+function updateRepYj() {
+  const daily=dailyBudget();
+  const sales=+document.getElementById('rSales').value||0;
+  const el=document.getElementById('rYjVal');
+  if(daily<=0){ el.textContent='予算未設定'; el.className='big'; return; }
+  if(sales<=0){ el.textContent='—'; el.className='big'; return; }
+  const diff=sales-daily, rate=Math.round(sales/daily*100);
+  el.textContent=fsign(diff)+'（達成率'+rate+'%）';
+  el.className='big '+(diff>=0?'pos':'neg');
+}
+function saveReport() {
+  const r={
+    sales:+document.getElementById('rSales').value||0,
+    weather:document.getElementById('rWeather').value.trim(),
+    customers:+document.getElementById('rCust').value||0,
+    nightGroups:+document.getElementById('rNight').value||0,
+    memo:document.getElementById('rMemo').value.trim()
+  };
+  const empty=!r.sales&&!r.weather&&!r.customers&&!r.nightGroups&&!r.memo;
+  if(empty) delete S.reports[editingDate]; else S.reports[editingDate]=r;
+  save(); renderCalendar();
+  toast('✅ 日報を保存しました');
+}
+function copyDayReport() {
+  const ds=editingDate; const d=new Date(ds+'T00:00:00');
+  const head=(d.getMonth()+1)+'/'+d.getDate()+'('+WDAYS[d.getDay()]+')';
+  const r={ sales:+document.getElementById('rSales').value||0, weather:document.getElementById('rWeather').value.trim(), customers:+document.getElementById('rCust').value||0, nightGroups:+document.getElementById('rNight').value||0, memo:document.getElementById('rMemo').value.trim() };
+  const daily=dailyBudget();
+  let t='■ HiCKS 日報　'+head+'\n';
+  if(r.sales>0){
+    t+='売上：'+fyen(r.sales);
+    if(daily>0) t+='（日予算 '+fyen(daily)+' / 達成率'+Math.round(r.sales/daily*100)+'%）';
+    t+='\n';
+    if(daily>0) t+='差額：'+fsign(r.sales-daily)+'\n';
+  }
+  if(r.customers>0) t+='客数：'+r.customers+'名\n';
+  if(r.nightGroups>0) t+='夜の組数：'+r.nightGroups+'組\n';
+  if(r.weather) t+='天気：'+r.weather+'\n';
+  if(r.memo) t+='メモ：'+r.memo+'\n';
+  const yj=monthYojitsu();
+  if(yj.daily>0 && yj.daysLogged>0){
+    t+='────────────\n';
+    t+='累計売上：'+fyen(yj.cum)+(yj.mb>0?'（月予算達成率'+yj.rate+'%）':'')+'\n';
+    t+='ペース：'+fsign(yj.pace)+'（'+(yj.pace>=0?'貯金':'借金')+'）\n';
+  }
+  const done=()=>toast('📋 日報をコピーしました');
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done).catch(()=>{ const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); });
+  } else { const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); }
+}
+
+// ============================================================
+// 初期化
+// ============================================================
+renderSidebar();
+renderCalendar();
+</script>
+</body>
+</html>
