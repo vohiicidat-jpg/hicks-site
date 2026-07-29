@@ -7,7 +7,7 @@
 <meta name="description" content="富山県高岡市のホットドッグ専門店 HiCKS LOCAL STAND。一本ずつ手作りする自家製ソーセージのホットドッグをテイクアウトでどうぞ。水〜土曜営業・契約駐車場あり。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=M+PLUS+Rounded+1c:wght@400;500;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=RocknRoll+One&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --cream:#FFF6EA;
@@ -16,13 +16,14 @@
   --mustard:#F2B02C;
   --blue:#2B5BA8;
   --ink:#33221A;
-  --stripe: repeating-linear-gradient(90deg, var(--ketchup) 0 28px, var(--cream) 28px 40px, var(--blue) 40px 68px, var(--cream) 68px 80px);
+  --turquoise:#1D9E75;
+  --stripe: repeating-linear-gradient(90deg, #E8442A 0 16px, #F2B02C 16px 22px, #1D9E75 22px 36px, #FFF6EA 36px 40px, #2B5BA8 40px 54px, #F2B02C 54px 58px, #33221A 58px 62px, #FFF6EA 62px 68px);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
 body{
-  font-family:'M PLUS Rounded 1c',sans-serif;
+  font-family:'Zen Kaku Gothic New',sans-serif;
   background:var(--cream);
   color:var(--ink);
   line-height:1.9;
@@ -41,7 +42,7 @@ nav{
   display:flex;align-items:center;justify-content:space-between;
   padding:10px 20px;
 }
-.nav-logo{font-family:'Alfa Slab One',cursive;font-size:1.05rem;color:var(--ketchup);letter-spacing:.02em;text-decoration:none}
+.nav-logo{font-family:'Rye',cursive;font-size:1.05rem;color:var(--ketchup);letter-spacing:.02em;text-decoration:none}
 .nav-links{display:flex;gap:18px}
 .nav-links a{
   text-decoration:none;color:var(--ink);font-weight:800;font-size:.85rem;letter-spacing:.08em;
@@ -66,7 +67,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blue);outline-offse
   padding:4px 14px;border-radius:999px;letter-spacing:.12em;
 }
 h1{
-  font-family:'Alfa Slab One',cursive;
+  font-family:'Rye',cursive;
   font-size:clamp(2.6rem,6vw,4.6rem);
   line-height:1.05;color:var(--ketchup);
   text-shadow:3px 3px 0 var(--mustard);
@@ -94,7 +95,7 @@ h1{
 section{padding:72px 24px}
 .wrap{max-width:1000px;margin:0 auto}
 .sec-title{
-  font-family:'Alfa Slab One',cursive;
+  font-family:'Rye',cursive;
   font-size:clamp(1.7rem,3.5vw,2.4rem);
   color:var(--blue);margin-bottom:8px;letter-spacing:.02em;
 }
@@ -118,7 +119,7 @@ section{padding:72px 24px}
 .card-photo img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
 .card:hover .card-photo img{transform:scale(1.04)}
 .card-body{padding:16px 18px 20px}
-.card-name{font-family:'Alfa Slab One',cursive;color:var(--ketchup);font-size:1.05rem;margin-bottom:4px}
+.card-name{font-family:'RocknRoll One',sans-serif;color:var(--ketchup);font-size:1.05rem;margin-bottom:4px}
 .card-desc{font-size:.88rem;line-height:1.7}
 .menu-note{margin-top:26px;text-align:center;font-size:.88rem;font-weight:500}
 
@@ -153,7 +154,7 @@ footer{
   padding:46px 20px 30px;position:relative;
 }
 .footer-mascot{width:110px;margin:0 auto 14px;filter:drop-shadow(3px 3px 0 rgba(0,0,0,.35))}
-.footer-logo{font-family:'Alfa Slab One',cursive;color:var(--mustard);font-size:1.3rem;margin-bottom:6px}
+.footer-logo{font-family:'Rye',cursive;color:var(--mustard);font-size:1.3rem;margin-bottom:6px}
 .footer-small{font-size:.75rem;opacity:.65}
 
 /* responsive */
@@ -169,14 +170,14 @@ footer{
 /* ===== detailed menu (added) ===== */
 .menu-block{margin-top:44px}
 .menu-block-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px}
-.menu-block-title{font-family:'Alfa Slab One',cursive;color:var(--ketchup);font-size:1.4rem;letter-spacing:.02em}
+.menu-block-title{font-family:'Rye',cursive;color:var(--ketchup);font-size:1.4rem;letter-spacing:.02em}
 .menu-block-title-ja{font-weight:800;color:var(--ink);opacity:.55;font-size:.8rem;letter-spacing:.15em}
 .menu-block-note{font-size:.85rem;opacity:.75;margin-bottom:8px}
-.menu-cat{font-family:'Alfa Slab One',cursive;color:var(--blue);font-size:1rem;letter-spacing:.04em;margin:24px 0 6px}
+.menu-cat{font-family:'Rye',cursive;color:var(--blue);font-size:1rem;letter-spacing:.04em;margin:24px 0 6px}
 .menu-list{display:flex;flex-direction:column}
 .menu-row{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:10px 2px;border-bottom:2px dashed rgba(51,34,26,.2)}
 .menu-list .menu-row:last-child{border-bottom:none}
-.menu-row-name{font-weight:800}
+.menu-row-name{font-family:'RocknRoll One',sans-serif;font-weight:400;font-size:1.02rem}
 .menu-row-desc{display:block;font-size:.78rem;font-weight:500;opacity:.7;margin-top:2px}
 .menu-price{font-weight:800;color:var(--ketchup);white-space:nowrap;font-size:.95rem}
 .menu-chip-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0 24px}
@@ -191,7 +192,7 @@ footer{
 .shop-grid{display:flex;justify-content:center}
 .shop-card{background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:6px 6px 0 var(--mustard);padding:32px 30px;max-width:360px;width:100%;text-align:center}
 .shop-card-icon{font-size:2.6rem;margin-bottom:8px}
-.shop-card-name{font-family:'Alfa Slab One',cursive;color:var(--ketchup);font-size:1.2rem;margin-bottom:8px}
+.shop-card-name{font-family:'RocknRoll One',sans-serif;color:var(--ketchup);font-size:1.2rem;margin-bottom:8px}
 .shop-card-price{font-size:1.5rem;font-weight:800;color:var(--blue);margin-bottom:14px}
 .shop-card-desc{font-size:.9rem;line-height:1.8;margin-bottom:20px}
 .shop-note{margin-top:24px;text-align:center;font-size:.85rem;opacity:.8}
