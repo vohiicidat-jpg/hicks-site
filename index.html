@@ -648,4 +648,6 @@ footer{position:relative;border-top:14px solid transparent;border-image:var(--se
           animation-name: claude-cursor-ring-fade;
         }
       }
-    </style></template></div></body></html>
+    </style></template></div><style id="cal-mobile-fix">.bcal-t .s{display:none}@media(max-width:600px){.bcal{padding:34px 8px 16px!important}.bcal-grid{gap:3px!important}.bcal-day{min-height:64px!important;padding:5px 2px 4px!important;align-items:center;text-align:center;gap:2px!important}.bcal-num{font-size:.9rem!important}.bcal-t .l{display:none}.bcal-t .s{display:inline}.bcal-t{font-size:.74rem!important;letter-spacing:0!important}.bcal-day.closed .bcal-t{font-size:.65rem!important}.bcal-pop{position:static!important;font-size:.5rem!important;padding:1px 4px!important;border-radius:5px!important;white-space:nowrap;line-height:1.4;align-self:center!important}.bcal-month{font-size:1.8rem!important}.bcal-title{font-size:1rem!important}}</style>
+<script id="cal-mobile-fix-js">document.querySelectorAll('.bcal-t').forEach(function(t){if(t.querySelector('.l'))return;var v=t.textContent.trim();var s=v.replace(/(\d+):00/g,'$1').replace(/[–—]/,'-');t.innerHTML='<span class="l">'+v+'</span><span class="s">'+s+'</span>';});</script>
+</body></html>
